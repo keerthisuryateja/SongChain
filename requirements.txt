@@ -1,0 +1,6 @@
+flask
+flask-cors
+yt-dlp
+python-vlc
+httpx
+rich
