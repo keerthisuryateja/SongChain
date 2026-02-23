@@ -5,3 +5,5 @@ __pycache__/
 design-system/
 history.json
 *.pyc
+venv/
+frontend/package-lock.json
