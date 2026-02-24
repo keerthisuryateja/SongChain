@@ -34,7 +34,7 @@ SONG_CATEGORIES = {
         "Adiga Adiga Ninnu Kori",
         "Mellaga Tellarindoi Sankar Dada MBBS"
     ],
-    "Global Hits": [
+    "English Songs": [
         "Shape of You Ed Sheeran video song",
         "Blinding Lights The Weeknd video song",
         "Levitating Dua Lipa video song",
@@ -43,6 +43,41 @@ SONG_CATEGORIES = {
         "Believer Imagine Dragons",
         "Watermelon Sugar Harry Styles",
         "As It Was Harry Styles"
+    ],
+    "Entertainment": [
+        "Pathaan - Jhoome Jo Pathaan Video Song",
+        "Pushpa 2 - Angaaron Video Song",
+        "Animal - Arjan Vailly Video Song",
+        "Leo - Badass Video Song",
+        "Fighter - Sher Khul Gaye Video Song"
+    ],
+    "Break Up": [
+        "Channa Mereya Ae Dil Hai Mushkil",
+        "Pachtaoge Arijit Singh",
+        "Bekhayali Kabir Singh",
+        "Agar Tum Saath Ho Tamasha",
+        "Hamari Adhuri Kahani Title Track"
+    ],
+    "Still / Chill": [
+        "Lofi Hip Hop Radio Beats to Relax",
+        "Slow Reverb Bollywood Songs 2024",
+        "Mellow Chill Beats for Study",
+        "Nature Sounds Rain and Thunderstorm",
+        "Acoustic Guitar Cover Popular Songs"
+    ],
+    "Recent Hits": [
+        "Soulmate Badshah Arijit Singh",
+        "O Maahi Dunki Video Song",
+        "Vidaamuyarchi Song Ajith Kumar",
+        "Illuminati Aavesham Video Song",
+        "Tauba Tauba Bad Newz Video Song"
+    ],
+    "Trending": [
+        "Pushpa Pushpa Pushpa 2 The Rule",
+        "Fear Song Devara Movie",
+        "Sooseki Pushpa 2 Song",
+        "Manasilaayo Vettaiyan Song",
+        "Tilasmi Bahein Heeramandi"
     ]
 }
 

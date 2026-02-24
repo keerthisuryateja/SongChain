@@ -10,8 +10,8 @@ from music_player.fetcher import SongFetcher
 from music_player.audio import AudioPlayer
 
 app = Flask(__name__)
-# Enable CORS for frontend Vite app (running mostly on localhost:5173)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+# Enable CORS for frontend Vite app
+CORS(app, supports_credentials=True)
 
 # Global State
 playlist = DoublyLinkedList()
@@ -282,6 +282,37 @@ def shuffle_category():
         return jsonify({"error": "No category provided"}), 400
     playlist.shuffle_category(category)
     return jsonify({"success": True})
+
+@app.route("/api/play_category", methods=["POST"])
+def play_category():
+    data = request.json
+    category = data.get("category")
+    if not category:
+        return jsonify({"error": "No category provided"}), 400
+    
+    # Filter songs by category
+    cat_nodes = playlist.filter_by_category(category)
+    if not cat_nodes:
+        return jsonify({"error": "No songs in this category"}), 404
+        
+    # Jump to the first song of this category
+    node = cat_nodes[0]
+    # Find its index in the actual list
+    curr = playlist.head
+    idx = 0
+    found = False
+    while curr:
+        if curr == node:
+            found = True
+            break
+        curr = curr.next
+        idx += 1
+    
+    if found:
+        playlist.jump_to(idx)
+        app_play(node)
+        return jsonify({"success": True, "node": serialize_node(node)})
+    return jsonify({"error": "Song not found in list"}), 404
 
 @app.route("/api/random_pick", methods=["POST"])
 def random_pick():
