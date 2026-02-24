@@ -112,5 +112,13 @@ export const api = {
             body: JSON.stringify({ category })
         });
         return res.json();
+    },
+    async playCategory(category) {
+        const res = await fetch(`${API_BASE}/play_category`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ category })
+        });
+        return res.json();
     }
 };

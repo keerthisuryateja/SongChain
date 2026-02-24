@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
     Play, Pause, SkipForward, SkipBack, Search, ListMusic,
-    Music, Shuffle, ListOrdered, Library, PlusCircle, Trash2, EyeOff, Dices
+    Music, Shuffle, ListOrdered, Library, PlusCircle, Trash2, EyeOff, Dices,
+    Flame, HeartOff, Coffee, Clock, Clapperboard, Sparkles, ArrowLeft, ChevronRight
 } from 'lucide-react';
 import { api } from './api';
 
@@ -24,6 +25,7 @@ function cleanTitle(title) {
 
 function App() {
     const [activeTab, setActiveTab] = useState('playlist');
+    const [selectedCategory, setSelectedCategory] = useState(null);
     const [query, setQuery] = useState('');
 
     const [status, setStatus] = useState(null);
@@ -90,7 +92,7 @@ function App() {
                         <p className="text-[10px] font-semibold tracking-widest text-surface-500 uppercase mb-2 px-2">Library</p>
 
                         <button
-                            onClick={() => setActiveTab('playlist')}
+                            onClick={() => { setActiveTab('playlist'); setSelectedCategory(null); }}
                             className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors ${activeTab === 'playlist' ? 'bg-brand-600/20 text-brand-300 font-medium' : 'text-surface-400 hover:text-surface-200 hover:bg-surface-800'}`}
                         >
                             <ListMusic size={16} />
@@ -98,7 +100,7 @@ function App() {
                         </button>
 
                         <button
-                            onClick={() => setActiveTab('queue')}
+                            onClick={() => { setActiveTab('queue'); setSelectedCategory(null); }}
                             className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors ${activeTab === 'queue' ? 'bg-brand-600/20 text-brand-300 font-medium' : 'text-surface-400 hover:text-surface-200 hover:bg-surface-800'}`}
                         >
                             <ListOrdered size={16} />
@@ -111,7 +113,7 @@ function App() {
                         </button>
 
                         <button
-                            onClick={() => setActiveTab('categories')}
+                            onClick={() => { setActiveTab('categories'); setSelectedCategory(null); }}
                             className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors ${activeTab === 'categories' ? 'bg-brand-600/20 text-brand-300 font-medium' : 'text-surface-400 hover:text-surface-200 hover:bg-surface-800'}`}
                         >
                             <Library size={16} />
@@ -166,7 +168,14 @@ function App() {
                             <QueueView queueData={queueData} wrapAction={wrapAction} />
                         )}
                         {activeTab === 'categories' && (
-                            <CategoriesView categories={status?.categories || {}} wrapAction={wrapAction} />
+                            <CategoriesView
+                                categories={status?.categories || {}}
+                                playlist={playlistData.playlist}
+                                currentSongId={playlistData.current?.song_id}
+                                wrapAction={wrapAction}
+                                selectedCategory={selectedCategory}
+                                setSelectedCategory={setSelectedCategory}
+                            />
                         )}
                     </div>
                 </div>
@@ -350,31 +359,138 @@ function QueueView({ queueData, wrapAction }) {
     );
 }
 
-function CategoriesView({ categories, wrapAction }) {
+function CategoriesView({ categories, playlist, currentSongId, wrapAction, selectedCategory, setSelectedCategory }) {
     const catEntries = Object.entries(categories);
+
+    const getIcon = (name) => {
+        const lower = name.toLowerCase();
+        if (lower.includes('entertain')) return Clapperboard;
+        if (lower.includes('break up')) return HeartOff;
+        if (lower.includes('still') || lower.includes('chill')) return Coffee;
+        if (lower.includes('recent')) return Clock;
+        if (lower.includes('trending')) return Flame;
+        if (lower.includes('pop') || lower.includes('hit')) return Sparkles;
+        if (lower.includes('english')) return Music;
+        return Music;
+    };
+
+    if (selectedCategory) {
+        const filteredSongs = playlist
+            .map((song, index) => ({ ...song, originalIndex: index }))
+            .filter(song => song.category === selectedCategory);
+        const Icon = getIcon(selectedCategory);
+
+        return (
+            <div className="flex flex-col h-full">
+                <header className="px-8 pt-8 pb-5 border-b border-surface-800 shrink-0">
+                    <button
+                        onClick={() => setSelectedCategory(null)}
+                        className="flex items-center gap-2 text-surface-500 hover:text-brand-400 transition-colors mb-4 group"
+                    >
+                        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                        <span className="text-xs font-semibold uppercase tracking-wider">Back to Categories</span>
+                    </button>
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-surface-900 flex items-center justify-center text-brand-400 border border-surface-700/50">
+                            <Icon size={24} />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-semibold text-surface-50">{selectedCategory}</h2>
+                            <p className="text-sm text-surface-500">{filteredSongs.length} Tracks in this collection</p>
+                        </div>
+                    </div>
+                </header>
+                <div className="flex-1 overflow-y-auto px-8 py-6 space-y-2 custom-scrollbar">
+                    {filteredSongs.map((song) => {
+                        const isCurrent = currentSongId === song.song_id;
+                        return (
+                            <div
+                                key={song.song_id}
+                                className={`glass-card px-4 py-3 flex items-center group ${isCurrent ? 'border-brand-500/40 bg-brand-600/10' : 'hover:bg-surface-800/50'}`}
+                            >
+                                <div className="w-10 h-10 rounded-md bg-surface-800 overflow-hidden flex-shrink-0 border border-surface-700 flex items-center justify-center">
+                                    {song.thumbnail ? <img src={song.thumbnail} className="w-full h-full object-cover" /> : <Music size={14} className="text-surface-500" />}
+                                </div>
+                                <div className="flex-1 ml-4 truncate cursor-pointer" onClick={wrapAction(() => api.jump(song.originalIndex))}>
+                                    <h3 className={`font-medium text-sm truncate ${isCurrent ? 'text-brand-300' : 'text-surface-100'}`}>
+                                        {cleanTitle(song.title)}
+                                    </h3>
+                                    <p className="text-xs text-surface-500 truncate">{song.artist}</p>
+                                </div>
+                                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        onClick={wrapAction(() => api.jump(song.originalIndex))}
+                                        className="p-2 bg-brand-600/20 text-brand-400 rounded-lg hover:bg-brand-600 hover:text-white transition-all"
+                                    >
+                                        <Play size={14} fill="currentColor" />
+                                    </button>
+                                    <button
+                                        onClick={wrapAction(() => api.addToQueue(song.originalIndex))}
+                                        className="p-2 bg-surface-800 text-surface-400 rounded-lg hover:bg-surface-700 hover:text-surface-100 transition-all"
+                                    >
+                                        <PlusCircle size={14} />
+                                    </button>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col h-full">
             <header className="px-8 pt-8 pb-5 border-b border-surface-800 shrink-0">
                 <h2 className="text-2xl font-semibold text-surface-50">Categories</h2>
-                <p className="text-sm text-surface-500 mt-0.5">Auto-detected clusters from metadata</p>
+                <p className="text-sm text-surface-500 mt-0.5">Explore your music library by genre</p>
             </header>
-            <div className="flex-1 overflow-y-auto px-8 py-4 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar">
                 {catEntries.length === 0 ? (
-                    <EmptyState icon={Library} text="No categories found yet." />
+                    <EmptyState icon={Library} text="No categories found yet. Try searching for some songs!" />
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {catEntries.map(([catName, count]) => (
-                            <div key={catName} className="glass-card p-5 flex flex-col gap-3 h-36 group hover:border-brand-500/40">
-                                <div>
-                                    <h3 className="text-base font-semibold text-surface-50">{catName}</h3>
-                                    <p className="text-sm text-surface-500">{count} Track(s)</p>
+                        {catEntries.map(([catName, count]) => {
+                            const Icon = getIcon(catName);
+                            return (
+                                <div
+                                    key={catName}
+                                    className="glass-card p-5 flex flex-col justify-between h-40 group hover:border-brand-500/40 hover:bg-surface-800/90 transition-all cursor-pointer relative overflow-hidden"
+                                    onClick={() => setSelectedCategory(catName)}
+                                >
+                                    <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <ChevronRight size={20} className="text-brand-500" />
+                                    </div>
+                                    <div className="flex justify-between items-start">
+                                        <div className="w-10 h-10 rounded-xl bg-surface-900 flex items-center justify-center text-brand-400 border border-surface-700/50">
+                                            <Icon size={20} />
+                                        </div>
+                                        <span className="text-[10px] font-bold text-surface-500 bg-surface-900 px-2 py-1 rounded-full border border-surface-700/30">
+                                            {count} TRACKS
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-surface-50 mb-1">{catName}</h3>
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); wrapAction(() => api.playCategory(catName))(); }}
+                                                className="flex items-center gap-2 text-brand-400 hover:text-brand-300 transition-colors text-sm font-medium"
+                                            >
+                                                <Play size={14} fill="currentColor" />
+                                                <span>Play Mix</span>
+                                            </button>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); wrapAction(() => api.shuffleCategory(catName))(); }}
+                                                className="flex items-center gap-2 text-surface-400 hover:text-surface-200 transition-colors text-sm font-medium"
+                                            >
+                                                <Shuffle size={14} />
+                                                <span>Shuffle</span>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <button onClick={wrapAction(() => api.shuffleCategory(catName))} className="self-start flex items-center gap-2 text-surface-500 hover:text-brand-400 transition-colors opacity-0 group-hover:opacity-100 text-sm">
-                                    <Shuffle size={14} />
-                                    <span>Shuffle</span>
-                                </button>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>
